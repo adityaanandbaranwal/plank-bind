@@ -6,14 +6,14 @@ A lightweight Linux utility that enables Windows-style Super + Number app launch
 
 ## Overview
 
-Plank Bind dynamically maps your dock applications to keyboard shortcuts:
+Plank Bind dynamically maps your dock items to keyboard shortcuts (e.g. `Super + 1`, `Super + 2`, ...) based on their position in Plank's launchers directory (default: `~/.config/plank/dock1/launchers`)
 
-* `Super + 1` → First app in dock
-* `Super + 2` → Second app
-* `Super + 3` → Third app
+* `Super + 1` → First dock item
+* `Super + 2` → Second dock item
+* `Super + 3` → Third dock item
 * ...
 
-Whenever you **add, remove, or reorder apps in Plank**, the keybindings automatically update — no manual reconfiguration needed.
+Whenever you **pin or unpin apps** in Plank, the keybindings automatically update — no manual reconfiguration needed.
 
 ---
 
@@ -23,13 +23,10 @@ Whenever you **add, remove, or reorder apps in Plank**, the keybindings automati
   Automatically creates launcher scripts based on current dock apps.
 
 * **Real-time Updates**
-  Uses filesystem monitoring (`inotify`) to detect dock changes instantly.
+  Uses filesystem monitoring (*inotify and polling fallback*) to detect dock changes instantly.
 
 * **Configurable**
-  Supports custom Plank directories and max key limits.
-
-* **Crash-safe Design**
-  Avoids modifying Cinnamon’s internal keybinding schema.
+  Supports custom Plank directories and maximum key limits.
 
 * **Logging Support**
   All operations are logged for debugging and transparency.
@@ -38,7 +35,13 @@ Whenever you **add, remove, or reorder apps in Plank**, the keybindings automati
   Comes with clean setup and removal scripts.
 
 ---
+## Tech Stack
+* Bash Scripting
+* Linux utilities
+  * inotifywait (from inotify-tools)
+  * gtk-launch
 
+---
 ## Installation
 
 ```bash
@@ -48,15 +51,26 @@ chmod +x install.sh
 ./install.sh
 ```
 
-### Dependency
+### Dependency (Optional)
+
+For faster, event-based updates, install `inotify-tools` package if not already installed:
 
 ```bash
 sudo apt install inotify-tools
 ```
 
+### Requirements
+- Ensure Plank is added to startup applications.
+- Steps:
+  1. Open System Settings → Startup Applications
+  2. Click + at the bottom
+  3. Select Plank
+
 ---
 
-##  One-Time Setup (Cinnamon Shortcuts)
+##  One-Time Setup
+
+### Cinnamon Shortcuts
 
 Go to:
 
@@ -64,26 +78,34 @@ System Settings → Keyboard → Shortcuts → Custom Shortcuts
 
 Add the following:
 
-| Shortcut  | Command                          |
-| --------- | -------------------------------- |
-| Super + 1 | `~/.cache/plank-bind/launch1.sh` |
-| Super + 2 | `~/.cache/plank-bind/launch2.sh` |
-| Super + 3 | `~/.cache/plank-bind/launch3.sh` |
-| ...       | ...                              |
+| Shortcut    | Command                                             |
+| ----------- | --------------------------------------------------- |
+| `Super + 1` | `/home/YOUR_USER_NAME/.cache/plank-bind/launch1.sh` |
+| `Super + 2` | `/home/YOUR_USER_NAME/.cache/plank-bind/launch2.sh` |
+| `Super + 3` | `/home/YOUR_USER_NAME/.cache/plank-bind/launch3.sh` |
+| ...         | ...                                                 |
 
 ⚠️ Disable any existing `Super + number` shortcuts to avoid conflicts.
+
+### Apply Setup
+
+For first-time setup, it is recommended to restart your system (or log out and log back in).
+
+This is because Plank may not immediately persist dock changes to disk within the same session. Since Plank Bind relies on filesystem changes to detect updates, keybindings may not update correctly until Plank is initialized in a fresh session.
+
+After restarting, all changes to pinned apps will be detected and keybindings will update as expected.
 
 ---
 
 ## How It Works
 
 1. Plank stores dock items as `.dockitem` files.
-2. A watcher script monitors changes in the dock directory.
-3. On change:
-
+2. A background watcher (via autostart `.desktop` entry) monitors the dock directory
+3. On detecting changes:
    * Old launcher scripts are removed
-   * New scripts are generated based on current dock apps
-4. Keyboard shortcuts point to these generated scripts.
+   * New scripts are generated based on current dock items (`launch1.sh`, `launch2.sh`, ...)
+   * Each launch script launches the corresponding app using `gtk-launch` 
+4. Cinnamon shortcuts point to these generated scripts.
 
 ---
 
@@ -99,6 +121,7 @@ Example:
 
 ```bash
 MAX_KEYS=9
+# Custom Plank directory (Optional) :
 # PLANK_DIR="$HOME/.config/plank/dock1/launchers"
 ```
 
@@ -107,7 +130,7 @@ MAX_KEYS=9
 ## Limitations
 
 * Dock order is inferred from filesystem ordering (not Plank’s internal config).
-* Cinnamon keybindings must be set manually (only once).
+* Cinnamon shortcuts must be set manually (only once).
 
 ---
 

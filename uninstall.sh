@@ -38,7 +38,6 @@ if [ -f "$LOG_FILE" ]; then
     echo "Removed log file"
 fi
 
-
 # Ask before removing config
 if [ -f "$CONFIG_FILE" ]; then
     read -p "Remove config file? (y/N): " confirm
