@@ -124,6 +124,21 @@ MAX_KEYS=9
 # Custom Plank directory (Optional) :
 # PLANK_DIR="$HOME/.config/plank/dock1/launchers"
 ```
+---
+
+## Debug and Logs
+
+To monitor activity and troubleshoot issues, you can view the log file:
+
+```bash
+tail -f ~/.cache/plank-bind.log
+```
+
+This shows:
+* Detected dock changes
+* Generated keybindings
+* Any errors or warnings
+* The order of apps mapped to keybindings upon any change
 
 ---
 

@@ -42,6 +42,12 @@ if [ ! -d "$PLANK_DIR" ]; then
     exit 1
 fi
 
+# Check for pinned apps exceeding MAX_KEYS
+max_check=$(ls "$PLANK_DIR" | wc -l)
+if [ "$max_check" -gt "$MAX_KEYS" ]; then
+    log "Pinned apps exceed $MAX_KEYS. No change done"
+    exit 0
+fi
 
 # Clean old scripts
 rm -f "$TARGET_DIR"/launch*.sh
@@ -56,7 +62,7 @@ while IFS= read -r file; do
     full_path="$PLANK_DIR/$file"
     [ -f "$full_path" ] || continue
 
-    # safety check for corrupted .dockitem file
+    # Safety check for corrupted .dockitem file
     desktop_line=$(grep "^Launcher=" "$full_path" 2>/dev/null || true)
     if [ -z "$desktop_line" ]; then
         log "Skipping invalid file: $file"
